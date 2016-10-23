@@ -3,7 +3,6 @@
 use \Aws\S3\Exception\S3Exception;
 require '../app/start.php';
 
-
 $config = require('../app/config.php');
 
 //Get base64 image data
@@ -25,26 +24,19 @@ if ($imageToSave = validImage($config, $imageBase64)) {
         unlink($tmpFullPath);
 
         echo "Image uploaded to S3!".PHP_EOL;
-        echo "Path to the uploaded file : ".$config['AWS'].'/'.$config['s3']['bucket']."/uploads/lms/{$imageToSave}";
+        //http(s)://<bucket>.s3.amazonaws.com/<object>
+        //http(s)://s3.amazonaws.com/<bucket>/<object>
+        echo "Path to the uploaded file : http://".$config['s3']['bucket'].".s3.amazonaws.com/uploads/lms/{$imageToSave}";
     }
     catch(S3Exception $error){
-        //var_dump($error);
-        die("There was an error uploading that file.");
+        throw new Exception("There was an error uploading that file.");
     }
-
-} else {
-    print 'Not an image!';
-}
-
-//Get image extenstion e.g. png, jpeg, jpg
-function getB64Ext($base64) {
-    // $str should start with 'data:' (= 5 characters long!)
-    return end(explode('/',substr($base64, 5, strpos($base64, ';')-5)));
 }
 
 function validImage($config, $base64) {
-    
-    $extension =  getB64Ext($base64);
+
+    //Get image extenstion e.g. png, jpeg, jpg
+    $extension =  end(explode('/',substr($base64, 5, strpos($base64, ';')-5)));
     
     if(!in_array($extension, $config['supportedExtensions'])){
         return false;
@@ -54,7 +46,7 @@ function validImage($config, $base64) {
     $img = imagecreatefromstring(base64_decode($imageData));
 
     if (!$img) {
-        return false;
+        throw new InvalidArgumentException('File is not valid.');
     }
 
     //Temp details
@@ -73,7 +65,7 @@ function validImage($config, $base64) {
                 imagegif($img, $tmpFullPath);
             break;
         default     :
-                imagepng($img, $tmpFullPath);
+            throw new InvalidArgumentException('File "'.$tmpFile.'" is not valid jpg, png or gif image.');
     }
 
     $info = getimagesize($tmpFullPath);

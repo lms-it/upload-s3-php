@@ -13,6 +13,5 @@ return [
     'pathToTmp' => '../files/',
     'supportedExtensions' => [
         'png', 'jpg', 'jpeg', 'gif'
-    ],
-    "AWS" => "LINK_TO_YOUR_AWS" //e.g. https://s3.eu-central-1.amazonaws.com
+    ]
 ];
