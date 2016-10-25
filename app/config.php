@@ -10,7 +10,7 @@ return [
         'version' => 'latest',
         'region'  => 'YOUR_REGION'
     ],
-    'pathToTmp' => '../files/',
+    'pathToTmp' => dirname(__DIR__).'/files/',
     'supportedExtensions' => [
         'png', 'jpg', 'jpeg', 'gif'
     ]
