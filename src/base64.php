@@ -9,13 +9,14 @@ $config = require('../app/config.php');
 $imageBase64 = require('../app/img.php');
 
 
-if ($imageToSave = validImage($config, $imageBase64)) {
+if ($imageToSave = validImage($imageBase64)) {
     $tmpFullPath = $config['pathToTmp'].$imageToSave;
+    
     //Save into S3
     try{
         $s3->putObject([
             'Bucket' => $config['s3']['bucket'],
-            'Key' => "uploads/lms/{$imageToSave}",
+            'Key' => "uploads/{$imageToSave}",
             'Body' => fopen($tmpFullPath, 'rb'),
             //Access control level
             'ACL' => 'public-read'
@@ -23,18 +24,18 @@ if ($imageToSave = validImage($config, $imageBase64)) {
 
         unlink($tmpFullPath);
 
-        echo "Image uploaded to S3!".PHP_EOL;
         //http(s)://<bucket>.s3.amazonaws.com/<object>
         //http(s)://s3.amazonaws.com/<bucket>/<object>
-        echo "Path to the uploaded file : http://".$config['s3']['bucket'].".s3.amazonaws.com/uploads/lms/{$imageToSave}";
+        printf($s3->getObjectUrl($config['s3']['bucket'], "uploads/{$imageToSave}"));
     }
     catch(S3Exception $error){
         throw new Exception("There was an error uploading that file.");
     }
 }
 
-function validImage($config, $base64) {
-
+function validImage($base64) {
+    global $config;
+    
     //Get image extenstion e.g. png, jpeg, jpg
     $extension =  end(explode('/',substr($base64, 5, strpos($base64, ';')-5)));
     
