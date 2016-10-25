@@ -35,6 +35,7 @@ if ($imageToSave = validImage($imageBase64)) {
 
 function validImage($base64) {
     global $config;
+    $info = array();
     
     //Get image extenstion e.g. png, jpeg, jpg
     $extension =  end(explode('/',substr($base64, 5, strpos($base64, ';')-5)));
@@ -68,10 +69,12 @@ function validImage($base64) {
         default     :
             throw new InvalidArgumentException('File "'.$tmpFile.'" is not valid jpg, png or gif image.');
     }
+    
+    if(file_exists($tmpFullPath)){
+        $info = getimagesize($tmpFullPath);
+    }
 
-    $info = getimagesize($tmpFullPath);
-
-    if ($info[0] > 0 && $info[1] > 0 && $info['mime']) {
+    if (sizeof($info)>2 && $info[0] > 0 && $info[1] > 0 && $info['mime']) {
         return $tmpFile;
     }
 
